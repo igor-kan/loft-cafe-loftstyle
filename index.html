@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="Loft Cafe - industrial atmosphere, cinematic coffee craft, and immersive dining in downtown Toronto."
+  />
+  <title>Loft Cafe | Industrial Soul, Atmospheric Taste</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <canvas id="fx-canvas" aria-hidden="true"></canvas>
+  <div class="grain-overlay" aria-hidden="true"></div>
+  <div class="scanline-overlay" aria-hidden="true"></div>
+  <div class="cursor cursor--dot" aria-hidden="true"></div>
+  <div class="cursor cursor--ring" aria-hidden="true"></div>
+
+  <header class="topbar" data-reveal>
+    <a class="brand" href="#home" aria-label="Loft Cafe home">
+      <span class="brand__mark">◉</span>
+      <span>Loft Cafe</span>
+    </a>
+    <nav class="topbar__nav" aria-label="Main navigation">
+      <a href="#menu">Menu</a>
+      <a href="#ambience">Ambience</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#reserve">Reserve</a>
+    </nav>
+    <a class="button button--ghost magnetic" href="#reserve">Book Table</a>
+  </header>
+
+  <main>
+    <section class="section hero" id="home">
+      <div class="hero__content">
+        <p class="eyebrow" data-reveal>Loft Cafe / Toronto</p>
+        <h1 class="hero__title" data-reveal>
+          <span>Industrial soul.</span>
+          <span>Atmospheric taste.</span>
+        </h1>
+        <p class="hero__lead" data-reveal>
+          A cinematic cafe experience inspired by loft architecture: raw textures, dramatic light,
+          and hand-crafted coffee rituals.
+        </p>
+
+        <div class="hero__actions" data-reveal>
+          <a class="button magnetic" href="#menu">Explore Signature Menu</a>
+          <a class="button button--ghost magnetic" href="#gallery">See The Space</a>
+        </div>
+
+        <ul class="hero__stats">
+          <li data-reveal>
+            <strong data-count="36">0</strong>
+            <span>Single-origin roasts</span>
+          </li>
+          <li data-reveal>
+            <strong data-count="14">0</strong>
+            <span>Seasonal loft cocktails</span>
+          </li>
+          <li data-reveal>
+            <strong data-count="5">0</strong>
+            <span>Sensory zones</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="hero__scene" id="scene" aria-hidden="true">
+        <div class="scene-layer scene-layer--outer" data-depth="20"></div>
+        <div class="scene-layer scene-layer--middle" data-depth="40"></div>
+        <div class="scene-layer scene-layer--inner" data-depth="60"></div>
+        <div class="scene-pulse"></div>
+      </div>
+    </section>
+
+    <section class="section section--menu" id="menu">
+      <div class="section__heading" data-reveal>
+        <p class="eyebrow">Signature Set</p>
+        <h2>Bold flavor architecture.</h2>
+      </div>
+
+      <div class="menu-grid">
+        <article class="menu-card tilt" data-reveal>
+          <h3>Smoked Maple Cortado</h3>
+          <p>Cherrywood smoke, single-origin espresso, maple microfoam, sea-salt crema.</p>
+          <span class="tag">Coffee Ritual</span>
+        </article>
+        <article class="menu-card tilt" data-reveal>
+          <h3>Charcoal Citrus Tonic</h3>
+          <p>Activated citrus cordial, yuzu bitters, sparkling tonic, burnt orange mist.</p>
+          <span class="tag">Sparkling</span>
+        </article>
+        <article class="menu-card tilt" data-reveal>
+          <h3>Loft Nitro Bloom</h3>
+          <p>Nitro cold brew with black cardamom, cacao vapor, and vanilla bean cloud.</p>
+          <span class="tag">Nitro</span>
+        </article>
+        <article class="menu-card tilt" data-reveal>
+          <h3>Brick Oven Brioche</h3>
+          <p>Butter-laminated brioche, whipped mascarpone, espresso-caramel reduction.</p>
+          <span class="tag">Bakery</span>
+        </article>
+        <article class="menu-card tilt" data-reveal>
+          <h3>Night Shift Affogato</h3>
+          <p>Dark roast shot over tonka gelato with fermented cocoa nib crunch.</p>
+          <span class="tag">Dessert</span>
+        </article>
+        <article class="menu-card tilt" data-reveal>
+          <h3>Copper Matcha Spark</h3>
+          <p>Stone-ground matcha, rosemary tonic, pear extract, and copper citrus oils.</p>
+          <span class="tag">Tea Lab</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section--story" id="ambience">
+      <div class="story-layout">
+        <div class="story-visual" aria-hidden="true">
+          <div class="orb orb--a"></div>
+          <div class="orb orb--b"></div>
+          <div class="orb orb--c"></div>
+          <div class="ring ring--a"></div>
+          <div class="ring ring--b"></div>
+        </div>
+
+        <div class="story-copy">
+          <div class="section__heading" data-reveal>
+            <p class="eyebrow">Spatial Narrative</p>
+            <h2>Loft atmosphere, reprogrammed for modern cafe culture.</h2>
+          </div>
+
+          <ul class="feature-list">
+            <li data-reveal>
+              <span>01</span>
+              <p>Adaptive lighting shifts from bright atelier mornings to intimate amber nights.</p>
+            </li>
+            <li data-reveal>
+              <span>02</span>
+              <p>Sound design uses soft vinyl textures and low-frequency room tone layering.</p>
+            </li>
+            <li data-reveal>
+              <span>03</span>
+              <p>Material palette blends concrete, steel, reclaimed wood, and brushed copper.</p>
+            </li>
+            <li data-reveal>
+              <span>04</span>
+              <p>Coffee preparation becomes performance through open brewing and staged motion.</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--gallery" id="gallery">
+      <div class="section__heading" data-reveal>
+        <p class="eyebrow">Visual Rhythm</p>
+        <h2>Moving light, living geometry.</h2>
+      </div>
+
+      <div class="gallery-track" aria-hidden="true">
+        <div class="gallery-track__inner">
+          <span>Steam Sculptures</span>
+          <span>Copper Glow</span>
+          <span>Concrete Calm</span>
+          <span>Night Espresso</span>
+          <span>Spatial Acoustics</span>
+          <span>Steam Sculptures</span>
+          <span>Copper Glow</span>
+          <span>Concrete Calm</span>
+        </div>
+      </div>
+
+      <div class="image-strip">
+        <article class="image-card image-card--one tilt" data-reveal>
+          <h3>Bar Ritual</h3>
+        </article>
+        <article class="image-card image-card--two tilt" data-reveal>
+          <h3>Upper Loft</h3>
+        </article>
+        <article class="image-card image-card--three tilt" data-reveal>
+          <h3>Night Mode</h3>
+        </article>
+        <article class="image-card image-card--four tilt" data-reveal>
+          <h3>Vinyl Corner</h3>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section--reserve" id="reserve">
+      <div class="reserve-card" data-reveal>
+        <p class="eyebrow">Reserve</p>
+        <h2>Book your Loft table.</h2>
+        <p>
+          Tell us when you are coming. We will hold your preferred seating zone and tasting set.
+        </p>
+
+        <form class="reserve-form" id="reserve-form">
+          <label>
+            Name
+            <input type="text" name="name" required placeholder="Your name" />
+          </label>
+          <label>
+            Email
+            <input type="email" name="email" required placeholder="name@email.com" />
+          </label>
+          <label>
+            Date
+            <input type="date" name="date" required />
+          </label>
+          <button class="button magnetic" type="submit">Request Reservation</button>
+          <p class="form-note" id="form-note" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Loft Cafe · 214 King Street W · Toronto, ON</p>
+    <a href="#home">Back To Top</a>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

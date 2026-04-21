@@ -8,6 +8,7 @@
 - CSS custom properties and responsive layout primitives.
 - Vanilla JavaScript interaction engines.
 - Browser WebGL API for custom procedural shader background.
+- Three.js runtime scene for 3D cup model, steam particles, and orbiting bean swarm.
 
 ### Typography
 
@@ -26,6 +27,8 @@
 ### Motion System Inventory
 
 - WebGL procedural fluid-noise background shader.
+- Interactive Three.js model stage with pointer orbit response.
+- 2D vector-field particle simulation panel.
 - Layered 3D hero geometry with pointer-driven tilt.
 - Scroll reveal transitions with progressive stagger.
 - Card perspective tilt in menu and gallery blocks.
@@ -37,6 +40,7 @@
 ### Visual Texture Stack
 
 - Real-time shader color field.
+- Aurora gradient field and cinematic blended overlays.
 - SVG turbulence-based grain overlay.
 - Repeating scanline filter.
 - Glassmorphism-inspired translucent surfaces.
@@ -46,8 +50,9 @@
 
 - Hero split layout for narrative and dynamic visual anchor.
 - Light-themed menu panel to create contrast and rhythm.
-- Story section with abstract geometry replacing static imagery.
-- Gallery card strip for visual cadence before conversion.
+- Story section with abstract geometry and dynamic orbital forms.
+- Photo-driven gallery cards with cinematic overlays and hover zoom.
+- Dedicated interactive studio section for model/simulation showcase.
 - Centered reservation card as final conversion focus.
 
 ## Accessibility Strategy
@@ -56,10 +61,11 @@
 - Logical heading hierarchy and semantic landmarks.
 - High-contrast text in key actionable areas.
 - Touch-safe adaptations for pointer-only features.
+- Lazy-loading gallery photos with descriptive `alt` text.
 
 ## Performance Strategy
 
-- Lightweight, no-framework codebase.
+- Lightweight base code with selective Three.js integration for advanced 3D.
 - GPU-friendly transform animations where possible.
 - IntersectionObserver for deferred reveal work.
 - Canvas resolution clamped to reduce excessive GPU load.

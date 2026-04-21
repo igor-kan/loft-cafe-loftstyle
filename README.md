@@ -6,6 +6,9 @@ Immersive one-page website concept for **Loft Cafe**, designed around industrial
 
 - Cinematic hero section with layered 3D geometry and pointer-driven parallax.
 - Real-time WebGL procedural background shader (no external rendering framework).
+- Interactive Three.js studio scene with procedural 3D cup model, particle steam, and orbiting bean swarm.
+- Real-time 2D vector-field simulation canvas with pointer-driven turbulence.
+- Editorial photo gallery with cinematic overlays and tilt interactions.
 - 2D kinetic UI system: reveal-on-scroll, card tilt, magnetic buttons, moving track banner.
 - Custom cursor behavior for fine-pointer devices.
 - Rich visual texture stack: grain, scanline overlay, soft-light atmospheric depth.
@@ -43,8 +46,8 @@ loft-cafe-loftstyle/
 
 ## Build Approach
 
-- Core stack: semantic HTML + modern CSS + vanilla JavaScript.
-- No dependency lock-in: all animation and effects are custom-coded.
+- Core stack: semantic HTML + modern CSS + JavaScript + Three.js (CDN).
+- Most effects remain custom-coded while using Three.js for advanced 3D scene rendering.
 - Performance-friendly defaults: limited overdraw, viewport-aware animation triggers.
 - Visual language: copper + cyan accents, concrete neutrals, expressive typography.
 

@@ -13,6 +13,7 @@
 ## Browser APIs Used
 
 - WebGL (`canvas.getContext("webgl")`) for animated procedural background.
+- Canvas 2D for vector-field particle simulation.
 - IntersectionObserver for reveal and count-up triggers.
 - RequestAnimationFrame for smooth, frame-synced motion.
 - Pointer Events for tilt, magnetic, and custom cursor interactions.
@@ -20,12 +21,13 @@
 
 ## External Dependencies
 
-- None in build/runtime JavaScript.
+- Three.js loaded via CDN for interactive 3D model and particle scene rendering.
 - Fonts loaded from Google Fonts (`Syne`, `Manrope`, `JetBrains Mono`).
+- Unsplash image CDN URLs used for gallery photography.
 
 ## Why This Stack
 
 - Maximum control over motion and visual rendering.
-- Minimal dependency overhead and simpler portability.
+- Lightweight dependency footprint with high-end visual capability.
 - Easy deployment to any static host.
 - Clean foundation for later framework or CMS integration.

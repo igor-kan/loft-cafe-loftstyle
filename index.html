@@ -18,6 +18,7 @@
 </head>
 <body>
   <canvas id="fx-canvas" aria-hidden="true"></canvas>
+  <div class="aurora-overlay" aria-hidden="true"></div>
   <div class="grain-overlay" aria-hidden="true"></div>
   <div class="scanline-overlay" aria-hidden="true"></div>
   <div class="cursor cursor--dot" aria-hidden="true"></div>
@@ -29,6 +30,7 @@
       <span>Loft Cafe</span>
     </a>
     <nav class="topbar__nav" aria-label="Main navigation">
+      <a href="#studio">Studio</a>
       <a href="#menu">Menu</a>
       <a href="#ambience">Ambience</a>
       <a href="#gallery">Gallery</a>
@@ -76,6 +78,35 @@
         <div class="scene-layer scene-layer--middle" data-depth="40"></div>
         <div class="scene-layer scene-layer--inner" data-depth="60"></div>
         <div class="scene-pulse"></div>
+      </div>
+    </section>
+
+    <section class="section section--studio" id="studio">
+      <div class="section__heading" data-reveal>
+        <p class="eyebrow">Interactive Studio</p>
+        <h2>3D espresso sculpture + generative flow simulation.</h2>
+      </div>
+
+      <div class="studio-layout">
+        <article class="studio-panel tilt" data-reveal>
+          <canvas id="three-stage" aria-label="Interactive 3D coffee sculpture"></canvas>
+          <div class="studio-hud">
+            <p><strong>Drag</strong> to orbit model</p>
+            <p><strong>Steam</strong> particle simulation</p>
+            <p><strong>Beans</strong> physically animated swarm</p>
+          </div>
+        </article>
+
+        <article class="sim-panel" data-reveal>
+          <canvas id="bean-flow" aria-label="Coffee bean fluid simulation"></canvas>
+          <div class="sim-panel__copy">
+            <h3>Roast Flow Map</h3>
+            <p>
+              Live vector-field simulation inspired by loft airflow and roasting dynamics.
+              Pointer movement injects turbulence in real time.
+            </p>
+          </div>
+        </article>
       </div>
     </section>
 
@@ -176,19 +207,39 @@
         </div>
       </div>
 
-      <div class="image-strip">
-        <article class="image-card image-card--one tilt" data-reveal>
-          <h3>Bar Ritual</h3>
-        </article>
-        <article class="image-card image-card--two tilt" data-reveal>
-          <h3>Upper Loft</h3>
-        </article>
-        <article class="image-card image-card--three tilt" data-reveal>
-          <h3>Night Mode</h3>
-        </article>
-        <article class="image-card image-card--four tilt" data-reveal>
-          <h3>Vinyl Corner</h3>
-        </article>
+      <div class="photo-grid">
+        <figure class="photo-card tilt" data-reveal>
+          <img
+            src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1400&q=80"
+            alt="Espresso being poured in a dramatic cafe setting"
+            loading="lazy"
+          />
+          <figcaption>Bar Ritual</figcaption>
+        </figure>
+        <figure class="photo-card tilt" data-reveal>
+          <img
+            src="https://images.unsplash.com/photo-1445116572660-236099ec97a0?auto=format&fit=crop&w=1400&q=80"
+            alt="Loft-style cafe interior with warm lighting"
+            loading="lazy"
+          />
+          <figcaption>Upper Loft</figcaption>
+        </figure>
+        <figure class="photo-card tilt" data-reveal>
+          <img
+            src="https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=1400&q=80"
+            alt="Night ambience inside a modern coffee house"
+            loading="lazy"
+          />
+          <figcaption>Night Mode</figcaption>
+        </figure>
+        <figure class="photo-card tilt" data-reveal>
+          <img
+            src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80"
+            alt="A stylish social corner in a cafe"
+            loading="lazy"
+          />
+          <figcaption>Vinyl Corner</figcaption>
+        </figure>
       </div>
     </section>
 
@@ -225,6 +276,7 @@
     <a href="#home">Back To Top</a>
   </footer>
 
+  <script src="https://unpkg.com/three@0.163.0/build/three.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

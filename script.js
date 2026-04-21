@@ -551,6 +551,617 @@ function initBeanFlowSimulation() {
   window.requestAnimationFrame(render);
 }
 
+function initLatteArtGame() {
+  const canvas = document.getElementById("latte-canvas");
+  if (!canvas) {
+    return;
+  }
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    return;
+  }
+
+  const patternSelect = document.getElementById("latte-pattern");
+  const pourInput = document.getElementById("latte-pour");
+  const spinInput = document.getElementById("latte-spin");
+  const resetBtn = document.getElementById("latte-reset");
+  const scoreBtn = document.getElementById("latte-score");
+  const status = document.getElementById("latte-status");
+
+  const resolution = finePointer ? 132 : 108;
+  const size = resolution * resolution;
+  const center = (resolution - 1) * 0.5;
+
+  const milk = new Float32Array(size);
+  const milkNext = new Float32Array(size);
+  const velX = new Float32Array(size);
+  const velY = new Float32Array(size);
+  const velXNext = new Float32Array(size);
+  const velYNext = new Float32Array(size);
+  const divergence = new Float32Array(size);
+  const pressure = new Float32Array(size);
+  const pressureNext = new Float32Array(size);
+  const cupMask = new Uint8Array(size);
+  const radial = new Float32Array(size);
+
+  for (let y = 0; y < resolution; y += 1) {
+    for (let x = 0; x < resolution; x += 1) {
+      const i = y * resolution + x;
+      const nx = (x + 0.5) / resolution * 2 - 1;
+      const ny = (y + 0.5) / resolution * 2 - 1;
+      const r = Math.sqrt(nx * nx + ny * ny);
+      radial[i] = r;
+      cupMask[i] = r <= 0.965 ? 1 : 0;
+    }
+  }
+
+  const simCanvas = document.createElement("canvas");
+  simCanvas.width = resolution;
+  simCanvas.height = resolution;
+  const simCtx = simCanvas.getContext("2d");
+  if (!simCtx) {
+    return;
+  }
+
+  const simImage = simCtx.createImageData(resolution, resolution);
+  const simData = simImage.data;
+
+  const pointer = {
+    x: center,
+    y: center - resolution * 0.22,
+    vx: 0,
+    vy: 0,
+    down: false,
+    hasMoved: false,
+  };
+
+  let cupRadiusPx = 0;
+  let cupX = 0;
+  let cupY = 0;
+  let dpr = 1;
+  let bestScore = 0;
+
+  function clampIndex(value) {
+    return clamp(value, 0, resolution - 1.001);
+  }
+
+  function sample(array, x, y) {
+    const sx = clampIndex(x);
+    const sy = clampIndex(y);
+    const x0 = sx | 0;
+    const y0 = sy | 0;
+    const x1 = Math.min(x0 + 1, resolution - 1);
+    const y1 = Math.min(y0 + 1, resolution - 1);
+    const fx = sx - x0;
+    const fy = sy - y0;
+
+    const i00 = y0 * resolution + x0;
+    const i10 = y0 * resolution + x1;
+    const i01 = y1 * resolution + x0;
+    const i11 = y1 * resolution + x1;
+
+    const a = array[i00] * (1 - fx) + array[i10] * fx;
+    const b = array[i01] * (1 - fx) + array[i11] * fx;
+    return a * (1 - fy) + b * fy;
+  }
+
+  function targetField(pattern, nx, ny) {
+    const radius = Math.sqrt(nx * nx + ny * ny);
+    if (radius > 1) {
+      return 0;
+    }
+
+    if (pattern === "heart") {
+      const x = nx * 1.08;
+      const y = ny * 1.17 + 0.08;
+      const f = Math.pow(x * x + y * y - 0.34, 3) - x * x * Math.pow(y, 3);
+      return clamp(0.52 - f * 9, 0, 1);
+    }
+
+    if (pattern === "rosetta") {
+      const stem = Math.exp(-Math.abs(nx) * 10) * clamp(1.1 - (ny + 0.75), 0, 1);
+      const leaves =
+        (Math.sin((ny + 0.85) * 15 + Math.abs(nx) * 12) * 0.5 + 0.5) *
+        Math.exp(-Math.abs(nx) * 5.8) *
+        clamp(1.2 - (ny + 0.9), 0, 1);
+      return clamp(stem * 0.36 + leaves * 0.84, 0, 1);
+    }
+
+    const top = Math.exp(-(nx * nx * 20 + (ny + 0.34) * (ny + 0.34) * 70));
+    const mid = Math.exp(-(nx * nx * 18 + (ny + 0.11) * (ny + 0.11) * 58));
+    const low = Math.exp(-(nx * nx * 16 + (ny - 0.12) * (ny - 0.12) * 48));
+    const stem = Math.exp(-nx * nx * 85) * clamp(0.62 - ny, 0, 1);
+    return clamp(top + mid * 0.95 + low * 0.9 + stem * 0.42, 0, 1);
+  }
+
+  function resetCup() {
+    milk.fill(0);
+    velX.fill(0);
+    velY.fill(0);
+    pressure.fill(0);
+    pressureNext.fill(0);
+    divergence.fill(0);
+
+    const randomSpots = 12;
+    for (let k = 0; k < randomSpots; k += 1) {
+      const px = Math.random() * (resolution - 1);
+      const py = Math.random() * (resolution - 1);
+      const radius = 1.8 + Math.random() * 2.4;
+      for (let y = 1; y < resolution - 1; y += 1) {
+        for (let x = 1; x < resolution - 1; x += 1) {
+          const i = y * resolution + x;
+          if (!cupMask[i]) {
+            continue;
+          }
+          const dx = x - px;
+          const dy = y - py;
+          const influence = Math.exp(-(dx * dx + dy * dy) / (radius * radius * 2));
+          milk[i] = clamp(milk[i] + influence * 0.02, 0, 1);
+        }
+      }
+    }
+  }
+
+  function setStatus(text) {
+    if (status) {
+      status.textContent = text;
+    }
+  }
+
+  function getControlValues() {
+    const pour = Number(pourInput?.value ?? 1);
+    const spin = Number(spinInput?.value ?? 0.3);
+    const pattern = patternSelect?.value || "heart";
+    return { pour, spin, pattern };
+  }
+
+  function addPourForce(dt) {
+    if (!pointer.down) {
+      return;
+    }
+
+    const { pour } = getControlValues();
+    const radius = 2.1 + pour * 4.2;
+    const minX = Math.max(1, Math.floor(pointer.x - radius * 2));
+    const maxX = Math.min(resolution - 2, Math.ceil(pointer.x + radius * 2));
+    const minY = Math.max(1, Math.floor(pointer.y - radius * 2));
+    const maxY = Math.min(resolution - 2, Math.ceil(pointer.y + radius * 2));
+
+    for (let y = minY; y <= maxY; y += 1) {
+      for (let x = minX; x <= maxX; x += 1) {
+        const i = y * resolution + x;
+        if (!cupMask[i]) {
+          continue;
+        }
+
+        const dx = x - pointer.x;
+        const dy = y - pointer.y;
+        const distSq = dx * dx + dy * dy;
+        const influence = Math.exp(-distSq / (radius * radius * 1.8));
+        const dist = Math.sqrt(distSq) + 0.0001;
+
+        milk[i] = clamp(milk[i] + influence * 0.17 * pour * dt, 0, 1);
+        velX[i] += pointer.vx * 0.16 * influence + (dx / dist) * 0.01 * pour;
+        velY[i] += pointer.vy * 0.16 * influence + (dy / dist) * 0.01 * pour;
+      }
+    }
+  }
+
+  function addSpinForce(dt) {
+    const { spin } = getControlValues();
+    if (Math.abs(spin) < 0.001) {
+      return;
+    }
+
+    for (let y = 1; y < resolution - 1; y += 1) {
+      for (let x = 1; x < resolution - 1; x += 1) {
+        const i = y * resolution + x;
+        if (!cupMask[i]) {
+          continue;
+        }
+
+        const dx = x - center;
+        const dy = y - center;
+        const r = Math.sqrt(dx * dx + dy * dy) / center;
+        const falloff = clamp(1 - r, 0, 1);
+        const force = spin * falloff * 0.019 * dt;
+
+        velX[i] += -dy * force;
+        velY[i] += dx * force;
+      }
+    }
+  }
+
+  function diffuseVelocity() {
+    const viscosity = 0.13;
+    for (let y = 1; y < resolution - 1; y += 1) {
+      for (let x = 1; x < resolution - 1; x += 1) {
+        const i = y * resolution + x;
+        if (!cupMask[i]) {
+          velXNext[i] = 0;
+          velYNext[i] = 0;
+          continue;
+        }
+        const left = i - 1;
+        const right = i + 1;
+        const up = i - resolution;
+        const down = i + resolution;
+
+        velXNext[i] =
+          velX[i] +
+          viscosity * (velX[left] + velX[right] + velX[up] + velX[down] - 4 * velX[i]);
+        velYNext[i] =
+          velY[i] +
+          viscosity * (velY[left] + velY[right] + velY[up] + velY[down] - 4 * velY[i]);
+      }
+    }
+
+    velX.set(velXNext);
+    velY.set(velYNext);
+  }
+
+  function advectVelocity(dt) {
+    const factor = 0.85 * dt;
+
+    for (let y = 1; y < resolution - 1; y += 1) {
+      for (let x = 1; x < resolution - 1; x += 1) {
+        const i = y * resolution + x;
+        if (!cupMask[i]) {
+          velXNext[i] = 0;
+          velYNext[i] = 0;
+          continue;
+        }
+
+        const backX = x - velX[i] * factor;
+        const backY = y - velY[i] * factor;
+
+        velXNext[i] = sample(velX, backX, backY) * 0.996;
+        velYNext[i] = sample(velY, backX, backY) * 0.996;
+      }
+    }
+
+    velX.set(velXNext);
+    velY.set(velYNext);
+  }
+
+  function projectVelocity() {
+    const h = 1 / resolution;
+
+    for (let y = 1; y < resolution - 1; y += 1) {
+      for (let x = 1; x < resolution - 1; x += 1) {
+        const i = y * resolution + x;
+        if (!cupMask[i]) {
+          divergence[i] = 0;
+          pressure[i] = 0;
+          continue;
+        }
+
+        const left = i - 1;
+        const right = i + 1;
+        const up = i - resolution;
+        const down = i + resolution;
+        divergence[i] =
+          -0.5 *
+          h *
+          ((velX[right] - velX[left]) + (velY[down] - velY[up]));
+        pressure[i] = 0;
+      }
+    }
+
+    for (let iter = 0; iter < 10; iter += 1) {
+      for (let y = 1; y < resolution - 1; y += 1) {
+        for (let x = 1; x < resolution - 1; x += 1) {
+          const i = y * resolution + x;
+          if (!cupMask[i]) {
+            pressureNext[i] = 0;
+            continue;
+          }
+          const left = i - 1;
+          const right = i + 1;
+          const up = i - resolution;
+          const down = i + resolution;
+          pressureNext[i] = (divergence[i] + pressure[left] + pressure[right] + pressure[up] + pressure[down]) * 0.25;
+        }
+      }
+      pressure.set(pressureNext);
+    }
+
+    for (let y = 1; y < resolution - 1; y += 1) {
+      for (let x = 1; x < resolution - 1; x += 1) {
+        const i = y * resolution + x;
+        if (!cupMask[i]) {
+          velX[i] = 0;
+          velY[i] = 0;
+          continue;
+        }
+
+        const left = i - 1;
+        const right = i + 1;
+        const up = i - resolution;
+        const down = i + resolution;
+
+        velX[i] -= 0.5 * (pressure[right] - pressure[left]) / h;
+        velY[i] -= 0.5 * (pressure[down] - pressure[up]) / h;
+      }
+    }
+  }
+
+  function advectMilk(dt) {
+    const factor = 0.9 * dt;
+
+    for (let y = 1; y < resolution - 1; y += 1) {
+      for (let x = 1; x < resolution - 1; x += 1) {
+        const i = y * resolution + x;
+        if (!cupMask[i]) {
+          milkNext[i] = 0;
+          continue;
+        }
+
+        const backX = x - velX[i] * factor;
+        const backY = y - velY[i] * factor;
+        milkNext[i] = sample(milk, backX, backY);
+      }
+    }
+
+    for (let y = 1; y < resolution - 1; y += 1) {
+      for (let x = 1; x < resolution - 1; x += 1) {
+        const i = y * resolution + x;
+        if (!cupMask[i]) {
+          milk[i] = 0;
+          continue;
+        }
+        const left = i - 1;
+        const right = i + 1;
+        const up = i - resolution;
+        const down = i + resolution;
+        const smooth = (milkNext[left] + milkNext[right] + milkNext[up] + milkNext[down]) * 0.25;
+        milk[i] = clamp(milkNext[i] * 0.94 + smooth * 0.06, 0, 1);
+      }
+    }
+  }
+
+  function renderField(now) {
+    const t = now * 0.001;
+
+    for (let y = 0; y < resolution; y += 1) {
+      for (let x = 0; x < resolution; x += 1) {
+        const i = y * resolution + x;
+        const pixel = i * 4;
+
+        if (!cupMask[i]) {
+          simData[pixel] = 0;
+          simData[pixel + 1] = 0;
+          simData[pixel + 2] = 0;
+          simData[pixel + 3] = 0;
+          continue;
+        }
+
+        const milkValue = clamp(milk[i], 0, 1);
+        const r = radial[i];
+        const crema = clamp(1 - r * 0.95, 0, 1);
+        const shimmer = Math.sin(x * 0.08 + y * 0.11 + t * 1.8) * 0.5 + 0.5;
+
+        const coffeeR = 78 + crema * 36 + shimmer * 10;
+        const coffeeG = 48 + crema * 24 + shimmer * 6;
+        const coffeeB = 29 + crema * 12;
+
+        const milkR = 245;
+        const milkG = 238;
+        const milkB = 226;
+
+        simData[pixel] = Math.round(coffeeR * (1 - milkValue) + milkR * milkValue);
+        simData[pixel + 1] = Math.round(coffeeG * (1 - milkValue) + milkG * milkValue);
+        simData[pixel + 2] = Math.round(coffeeB * (1 - milkValue) + milkB * milkValue);
+        simData[pixel + 3] = 255;
+      }
+    }
+
+    simCtx.putImageData(simImage, 0, 0);
+  }
+
+  function drawCup(now) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    renderField(now);
+
+    const dropX = pointer.x / resolution * canvas.width;
+    const dropY = pointer.y / resolution * canvas.height;
+
+    ctx.save();
+    ctx.fillStyle = "rgba(0, 0, 0, 0.42)";
+    ctx.beginPath();
+    ctx.ellipse(cupX, cupY + cupRadiusPx * 0.95, cupRadiusPx * 0.9, cupRadiusPx * 0.36, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cupX, cupY, cupRadiusPx, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.drawImage(simCanvas, cupX - cupRadiusPx, cupY - cupRadiusPx, cupRadiusPx * 2, cupRadiusPx * 2);
+    ctx.restore();
+
+    const radialGradient = ctx.createRadialGradient(
+      cupX,
+      cupY,
+      cupRadiusPx * 0.6,
+      cupX,
+      cupY,
+      cupRadiusPx * 1.04
+    );
+    radialGradient.addColorStop(0, "rgba(255, 255, 255, 0)");
+    radialGradient.addColorStop(1, "rgba(248, 240, 228, 0.22)");
+    ctx.strokeStyle = radialGradient;
+    ctx.lineWidth = cupRadiusPx * 0.08;
+    ctx.beginPath();
+    ctx.arc(cupX, cupY, cupRadiusPx * 0.96, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.strokeStyle = "rgba(255, 245, 232, 0.8)";
+    ctx.lineWidth = Math.max(2, cupRadiusPx * 0.02);
+    ctx.beginPath();
+    ctx.arc(cupX, cupY, cupRadiusPx * 0.985, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.strokeStyle = "rgba(236, 214, 193, 0.78)";
+    ctx.lineWidth = Math.max(2, cupRadiusPx * 0.038);
+    ctx.beginPath();
+    ctx.arc(cupX + cupRadiusPx * 0.98, cupY, cupRadiusPx * 0.28, -1.06, 1.06);
+    ctx.stroke();
+
+    if (pointer.down || pointer.hasMoved) {
+      ctx.strokeStyle = "rgba(245, 240, 230, 0.72)";
+      ctx.lineCap = "round";
+      ctx.lineWidth = Math.max(2, cupRadiusPx * 0.017);
+      ctx.beginPath();
+      ctx.moveTo(dropX, dropY - cupRadiusPx * 0.82);
+      ctx.lineTo(dropX, dropY);
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(250, 245, 234, 0.9)";
+      ctx.beginPath();
+      ctx.arc(dropX, dropY, Math.max(2, cupRadiusPx * 0.025), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function scorePattern() {
+    const { pattern } = getControlValues();
+
+    let diffSum = 0;
+    let targetMass = 0;
+    let actualMass = 0;
+    let count = 0;
+
+    for (let y = 0; y < resolution; y += 1) {
+      for (let x = 0; x < resolution; x += 1) {
+        const i = y * resolution + x;
+        if (!cupMask[i]) {
+          continue;
+        }
+
+        const nx = (x + 0.5) / resolution * 2 - 1;
+        const ny = (y + 0.5) / resolution * 2 - 1;
+        const target = targetField(pattern, nx, ny);
+        const actual = milk[i];
+        diffSum += Math.abs(actual - target);
+        targetMass += target;
+        actualMass += actual;
+        count += 1;
+      }
+    }
+
+    if (count === 0) {
+      return;
+    }
+
+    const similarity = 1 - diffSum / count;
+    const massPenalty = Math.abs(actualMass - targetMass) / (targetMass + 0.0001);
+    const score = clamp(Math.round((similarity * 100) - massPenalty * 18), 0, 100);
+    bestScore = Math.max(bestScore, score);
+
+    let rank = "Keep practicing.";
+    if (score >= 90) rank = "Master barista level.";
+    else if (score >= 76) rank = "Excellent pour.";
+    else if (score >= 60) rank = "Solid pattern, refine contrast.";
+
+    setStatus(`${pattern.toUpperCase()} score: ${score}/100 · Best: ${bestScore}/100 · ${rank}`);
+  }
+
+  function resizeCanvas() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const width = Math.max(1, Math.floor(canvas.clientWidth * dpr));
+    const height = Math.max(1, Math.floor(canvas.clientHeight * dpr));
+    canvas.width = width;
+    canvas.height = height;
+    cupRadiusPx = Math.min(width, height) * 0.43;
+    cupX = width * 0.5;
+    cupY = height * 0.5;
+  }
+
+  function mapPointer(event) {
+    const rect = canvas.getBoundingClientRect();
+    const nextX = clamp(((event.clientX - rect.left) / rect.width) * resolution, 0, resolution - 1);
+    const nextY = clamp(((event.clientY - rect.top) / rect.height) * resolution, 0, resolution - 1);
+    pointer.vx = nextX - pointer.x;
+    pointer.vy = nextY - pointer.y;
+    pointer.x = nextX;
+    pointer.y = nextY;
+    pointer.hasMoved = true;
+  }
+
+  canvas.addEventListener("pointerdown", (event) => {
+    pointer.down = true;
+    mapPointer(event);
+    if (canvas.setPointerCapture) {
+      canvas.setPointerCapture(event.pointerId);
+    }
+  });
+
+  canvas.addEventListener("pointermove", (event) => {
+    mapPointer(event);
+  });
+
+  canvas.addEventListener("pointerup", (event) => {
+    pointer.down = false;
+    if (canvas.releasePointerCapture) {
+      canvas.releasePointerCapture(event.pointerId);
+    }
+  });
+
+  canvas.addEventListener("pointerleave", () => {
+    pointer.down = false;
+    pointer.vx *= 0.4;
+    pointer.vy *= 0.4;
+  });
+
+  resetBtn?.addEventListener("click", () => {
+    resetCup();
+    setStatus("Cup reset. Start from center, then drag outward for petals and leaves.");
+  });
+
+  scoreBtn?.addEventListener("click", scorePattern);
+  patternSelect?.addEventListener("change", () => {
+    const pattern = patternSelect.value;
+    setStatus(`Target changed to ${pattern}. Pour, shape, then score your art.`);
+  });
+
+  resizeCanvas();
+  resetCup();
+  window.addEventListener("resize", resizeCanvas);
+
+  let lastTime = performance.now();
+
+  function frame(now) {
+    const dt = clamp((now - lastTime) / 16.666, 0.6, 2.1);
+    lastTime = now;
+
+    addSpinForce(dt);
+    addPourForce(dt);
+    diffuseVelocity();
+    advectVelocity(dt);
+    projectVelocity();
+    advectMilk(dt);
+
+    for (let i = 0; i < size; i += 1) {
+      if (!cupMask[i]) {
+        velX[i] = 0;
+        velY[i] = 0;
+        milk[i] = 0;
+        continue;
+      }
+      velX[i] *= 0.989;
+      velY[i] *= 0.989;
+      milk[i] *= 0.9998;
+    }
+
+    drawCup(now);
+    window.requestAnimationFrame(frame);
+  }
+
+  window.requestAnimationFrame(frame);
+}
+
 function initReveal() {
   const revealItems = Array.from(document.querySelectorAll("[data-reveal]"));
 
@@ -800,6 +1411,7 @@ window.addEventListener("DOMContentLoaded", () => {
   initWebGLBackdrop();
   initThreeStudio();
   initBeanFlowSimulation();
+  initLatteArtGame();
   initReveal();
   initCountUp();
   initHeroParallax();

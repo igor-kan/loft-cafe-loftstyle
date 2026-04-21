@@ -13,7 +13,7 @@
 ## Browser APIs Used
 
 - WebGL (`canvas.getContext("webgl")`) for animated procedural background.
-- Canvas 2D for vector-field particle simulation.
+- Canvas 2D for vector-field particle simulation and latte-art fluid mini-game.
 - IntersectionObserver for reveal and count-up triggers.
 - RequestAnimationFrame for smooth, frame-synced motion.
 - Pointer Events for tilt, magnetic, and custom cursor interactions.

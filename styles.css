@@ -433,6 +433,122 @@ main {
   font-size: 0.92rem;
 }
 
+.section--latte-lab {
+  width: min(1240px, 100% - clamp(1rem, 5vw, 3rem));
+  padding-top: clamp(2.8rem, 5.2vw, 5.5rem);
+}
+
+.latte-lab-layout {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 1rem;
+}
+
+.latte-canvas-card,
+.latte-control-card {
+  border-radius: 1.2rem;
+  border: 1px solid var(--line);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
+}
+
+.latte-canvas-card {
+  position: relative;
+  overflow: hidden;
+  padding: 1rem;
+}
+
+#latte-canvas {
+  display: block;
+  width: 100%;
+  height: 460px;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background:
+    radial-gradient(circle at 20% 15%, rgba(227, 193, 132, 0.15), transparent 50%),
+    radial-gradient(circle at 82% 83%, rgba(98, 184, 176, 0.14), transparent 46%),
+    #0c1114;
+}
+
+.latte-canvas-hint {
+  margin-top: 0.8rem;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.latte-control-card {
+  padding: 1rem 1.05rem 1.08rem;
+  display: grid;
+  gap: 0.82rem;
+  align-content: start;
+}
+
+.latte-control-card h3 {
+  margin: 0;
+  font-family: "Syne", sans-serif;
+  font-size: 1.2rem;
+}
+
+.latte-control-card label {
+  display: grid;
+  gap: 0.42rem;
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  letter-spacing: 0.02em;
+}
+
+.latte-control-card select,
+.latte-control-card input[type="range"] {
+  width: 100%;
+}
+
+.latte-control-card select {
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+  padding: 0.62rem 0.68rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-main);
+  font: inherit;
+}
+
+.latte-control-card input[type="range"] {
+  appearance: none;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-copper), var(--accent-cyan));
+  outline: none;
+}
+
+.latte-control-card input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.latte-actions {
+  margin-top: 0.25rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.latte-status {
+  margin: 0.1rem 0 0;
+  border-radius: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(8, 13, 16, 0.55);
+  padding: 0.7rem 0.72rem;
+  color: rgba(233, 224, 209, 0.9);
+  font-size: 0.86rem;
+  line-height: 1.48;
+}
+
 .section--menu .eyebrow {
   color: #73553b;
 }
@@ -856,8 +972,16 @@ body.cursor-hover .cursor--ring {
     grid-template-columns: 1fr;
   }
 
+  .latte-lab-layout {
+    grid-template-columns: 1fr;
+  }
+
   #three-stage {
     height: 360px;
+  }
+
+  #latte-canvas {
+    height: 380px;
   }
 
   .menu-grid {
@@ -893,6 +1017,10 @@ body.cursor-hover .cursor--ring {
     grid-template-columns: 1fr;
   }
 
+  .latte-actions {
+    grid-template-columns: 1fr;
+  }
+
   .studio-hud {
     grid-template-columns: 1fr;
   }
@@ -900,6 +1028,10 @@ body.cursor-hover .cursor--ring {
   #three-stage,
   #bean-flow {
     height: 280px;
+  }
+
+  #latte-canvas {
+    height: 320px;
   }
 
   .footer {

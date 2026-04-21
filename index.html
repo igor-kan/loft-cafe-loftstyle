@@ -31,6 +31,7 @@
     </a>
     <nav class="topbar__nav" aria-label="Main navigation">
       <a href="#studio">Studio</a>
+      <a href="#latte-lab">Latte Lab</a>
       <a href="#menu">Menu</a>
       <a href="#ambience">Ambience</a>
       <a href="#gallery">Gallery</a>
@@ -107,6 +108,52 @@
             </p>
           </div>
         </article>
+      </div>
+    </section>
+
+    <section class="section section--latte-lab" id="latte-lab">
+      <div class="section__heading" data-reveal>
+        <p class="eyebrow">Mini Game</p>
+        <h2>Latte Art Lab: pour, swirl, and score your crema design.</h2>
+      </div>
+
+      <div class="latte-lab-layout">
+        <article class="latte-canvas-card tilt" data-reveal>
+          <canvas id="latte-canvas" aria-label="Interactive latte art simulation"></canvas>
+          <div class="latte-canvas-hint">Hold/touch to pour milk • move to draw patterns</div>
+        </article>
+
+        <aside class="latte-control-card" data-reveal>
+          <h3>Barista Controls</h3>
+
+          <label>
+            Target Pattern
+            <select id="latte-pattern">
+              <option value="heart">Heart</option>
+              <option value="rosetta">Rosetta</option>
+              <option value="tulip">Tulip</option>
+            </select>
+          </label>
+
+          <label>
+            Pour Intensity
+            <input id="latte-pour" type="range" min="0.2" max="1.7" step="0.05" value="1" />
+          </label>
+
+          <label>
+            Cup Spin
+            <input id="latte-spin" type="range" min="-1.2" max="1.2" step="0.05" value="0.3" />
+          </label>
+
+          <div class="latte-actions">
+            <button class="button magnetic" id="latte-score" type="button">Score Art</button>
+            <button class="button button--ghost magnetic" id="latte-reset" type="button">Reset Cup</button>
+          </div>
+
+          <p class="latte-status" id="latte-status" aria-live="polite">
+            Pour from the center, then drag for feathered lines and score your pattern.
+          </p>
+        </aside>
       </div>
     </section>
 
